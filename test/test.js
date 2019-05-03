@@ -64,7 +64,7 @@ test('JsAudioNative.getDeviceInfo', (t) => {
   )
 })
 
-test.failing('new JsPaStream()', (t) => {
+test('new JsPaStream()', (t) => {
   let stream = new JsPaStream()
   return t.truthy(stream instanceof JsPaStream)
 })

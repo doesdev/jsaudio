@@ -1,9 +1,6 @@
 #include "stream.h"
 
-static inline Persistent<v8::Function> & constructor() {
-  static Persistent<v8::Function> JsPaStream::constructor;
-  return JsPaStream::constructor;
-}
+Persistent<Function> JsPaStream::constructor;
 
 JsPaStream::JsPaStream() {
 }
@@ -17,8 +14,12 @@ NAN_MODULE_INIT(JsPaStream::Init) {
   tpl->SetClassName(Nan::New("JsPaStream").ToLocalChecked());
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-  constructor.Reset(Nan::GetFunction(tpl));
-  Set(target, Nan::New("JsPaStream").ToLocalChecked(), Nan::GetFunction(tpl));
+  constructor.Reset();
+  Set(
+    target,
+    Nan::New("JsPaStream").ToLocalChecked(),
+    Nan::GetFunction(tpl).ToLocalChecked()
+  );
 }
 
 NAN_METHOD(JsPaStream::New) {
@@ -32,6 +33,8 @@ NAN_METHOD(JsPaStream::New) {
     const int argc = 1;
     LocalValue argv[argc] = { info[0] };
     LocalFunction cons =  Nan::New<Function>(constructor);
-    info.GetReturnValue().Set(cons->NewInstance(argc, argv));
+    info.GetReturnValue().Set(
+      Nan::NewInstance(cons, argc, argv).ToLocalChecked()
+    );
   }
 }

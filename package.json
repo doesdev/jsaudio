@@ -4,7 +4,8 @@
   "description": "JsAudio is to Node / JS as PyAudio is to Python",
   "main": "index.js",
   "scripts": {
-    "test": "standard && ava test/test.js --verbose"
+    "test": "standard && ava test/test.js --verbose",
+    "rebuild": "node-gyp rebuild"
   },
   "repository": {
     "type": "git",

@@ -24,15 +24,23 @@ PaDeviceIndex ThrowIfPaNoDevice (PaDeviceIndex dvcIndex) {
 
 // Cast helpers
 int LocalizeInt (MaybeLocalValue lvIn) {
-  return lvIn.ToLocalChecked()->Uint32Value();
+  return lvIn.ToLocalChecked()->Uint32Value(
+    Nan::GetCurrentContext()
+  ).ToChecked();
+}
+
+int64_t LocalizeInt64 (MaybeLocalValue lvIn) {
+  return lvIn.ToLocalChecked()->IntegerValue(
+    Nan::GetCurrentContext()
+  ).ToChecked();
 }
 
 double LocalizeDouble (MaybeLocalValue lvIn) {
-  return static_cast<double>(lvIn.ToLocalChecked()->IntegerValue());
+  return static_cast<double>(LocalizeInt64(lvIn));
 }
 
 unsigned long LocalizeULong (MaybeLocalValue lvIn) {
-  return static_cast<unsigned long>(lvIn.ToLocalChecked()->IntegerValue());
+  return static_cast<unsigned long>(LocalizeInt64(lvIn));
 }
 
 LocalString ToLocString (std::string str) {
@@ -40,7 +48,9 @@ LocalString ToLocString (std::string str) {
 }
 
 LocalObject ToLocObject (MaybeLocalValue lvIn) {
-  return lvIn.ToLocalChecked()->ToObject();
+  return lvIn.ToLocalChecked()->ToObject(
+    Nan::GetCurrentContext()
+  ).ToLocalChecked();
 }
 
 LocalString ConstCharPointerToLocString (const char* constCharPointer) {

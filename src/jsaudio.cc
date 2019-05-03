@@ -31,7 +31,7 @@ NAN_METHOD(getVersion) {
 
 // http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#ae606855a611cf29c7d2d7421df5e3b5d
 NAN_METHOD(getErrorText) {
-  int err = info[0]->Uint32Value();
+  int err = LocalizeInt(info[0]);
   info.GetReturnValue().Set(ConstCharPointerToLocString(Pa_GetErrorText(err)));
 }
 
@@ -53,7 +53,7 @@ NAN_METHOD(getDefaultHostApi) {
 // http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#a7c650aede88ea553066bab9bbe97ea90
 NAN_METHOD(getHostApiInfo) {
   HandleScope scope;
-  int api = info[0].IsEmpty() ? Pa_GetDefaultHostApi() : info[0]->Uint32Value();
+  int api = info[0].IsEmpty() ? Pa_GetDefaultHostApi() : LocalizeInt(info[0]);
   ThrowIfPaErrorInt(api);
   const PaHostApiInfo* hai = Pa_GetHostApiInfo(api);
   if (hai == NULL) {
@@ -79,7 +79,7 @@ NAN_METHOD(getLastHostErrorInfo) {
 
 // http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#a081c3975126d20b4226facfb7ba0620f
 NAN_METHOD(hostApiTypeIdToHostApiIndex) {
-  int api = info[0]->Uint32Value();
+  int api = LocalizeInt(info[0]);
   int index = Pa_HostApiTypeIdToHostApiIndex(static_cast<PaHostApiTypeId>(api));
   ThrowIfPaErrorInt(index);
   info.GetReturnValue().Set(index);
@@ -87,8 +87,8 @@ NAN_METHOD(hostApiTypeIdToHostApiIndex) {
 
 // http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#a54f306b5e5258323c95a27c5722258cd
 NAN_METHOD(hostApiDeviceIndexToDeviceIndex) {
-  int api = info[0]->Uint32Value();
-  int dvc = info[1]->Uint32Value();
+  int api = LocalizeInt(info[0]);
+  int dvc = LocalizeInt(info[1]);
   int index = ThrowIfPaErrorInt(Pa_HostApiDeviceIndexToDeviceIndex(api, dvc));
   info.GetReturnValue().Set(index);
 }
@@ -120,7 +120,7 @@ NAN_METHOD(getDeviceInfo) {
   HandleScope scope;
   PaDeviceIndex dvc = info[0].IsEmpty()
     ? Pa_GetDefaultInputDevice()
-    : info[0]->Uint32Value();
+    : LocalizeInt(info[0]);
   ThrowIfPaNoDevice(dvc);
   const PaDeviceInfo* di = Pa_GetDeviceInfo(dvc);
   if (di == NULL) {
@@ -137,7 +137,7 @@ NAN_METHOD(getDeviceInfo) {
 NAN_METHOD(isFormatSupported) {
   HandleScope scope;
   // Get params objects
-  LocalObject obj = info[0]->ToObject();
+  LocalObject obj = ToLocObject(info[0]);
   // Prepare params
   LocalObject objInput = ToLocObject(Get(obj, ToLocString("input")));
   LocalObject objOutput = ToLocObject(Get(obj, ToLocString("output")));
@@ -154,7 +154,7 @@ NAN_METHOD(isFormatSupported) {
 NAN_METHOD(whyIsFormatUnsupported) {
   HandleScope scope;
   // Get params objects
-  LocalObject obj = info[0]->ToObject();
+  LocalObject obj = ToLocObject(info[0]);
   // Prepare params
   LocalObject objInput = ToLocObject(Get(obj, ToLocString("input")));
   LocalObject objOutput = ToLocObject(Get(obj, ToLocString("output")));
@@ -174,7 +174,7 @@ NAN_METHOD(whyIsFormatUnsupported) {
 NAN_METHOD(openStream) {
   HandleScope scope;
   // Get params objects
-  LocalObject obj = info[0]->ToObject();
+  LocalObject obj = ToLocObject(info[0]);
   JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(
     ToLocObject(Get(obj, ToLocString("stream"))));
   // Prepare in / out params
@@ -187,7 +187,8 @@ NAN_METHOD(openStream) {
   unsigned long framesPerBuffer = LocalizeULong(
     Get(obj, ToLocString("framesPerBuffer")));
   PaStreamFlags streamFlags = static_cast<PaStreamFlags>(
-    Get(obj, ToLocString("streamFlags")).ToLocalChecked()->IntegerValue());
+    LocalizeInt64(Get(obj, ToLocString("streamFlags")))
+  );
   // Start stream
   PaError err = Pa_OpenStream(
     stream->streamPtrRef(),
@@ -207,7 +208,7 @@ NAN_METHOD(openStream) {
 NAN_METHOD(openDefaultStream) {
   HandleScope scope;
   // Get params objects
-  LocalObject obj = info[0]->ToObject();
+  LocalObject obj = ToLocObject(info[0]);
   JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(
     ToLocObject(Get(obj, ToLocString("stream"))));
   // Get stream options
@@ -237,7 +238,7 @@ NAN_METHOD(openDefaultStream) {
 NAN_METHOD(closeStream) {
   HandleScope scope;
   // Get stream object
-  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
   // Close stream
   ThrowIfPaError(Pa_CloseStream(stream->streamPtr()));
   info.GetReturnValue().Set(true);
@@ -247,7 +248,7 @@ NAN_METHOD(closeStream) {
 // NAN_METHOD(setStreamFinishedCallback) {
 //   HandleScope scope;
 //   // Get stream object
-//   JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+//   JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
 //   // ToDo: implement this
 //   // PaError Pa_SetStreamFinishedCallback(PaStream *stream, PaStreamFinishedCallback *streamFinishedCallback);
 //   info.GetReturnValue().Set(true);
@@ -258,7 +259,7 @@ NAN_METHOD(closeStream) {
 NAN_METHOD(startStream) {
   HandleScope scope;
   // Get stream object
-  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
   // Start stream
   ThrowIfPaError(Pa_StartStream(stream->streamPtr()));
   info.GetReturnValue().Set(true);
@@ -268,7 +269,7 @@ NAN_METHOD(startStream) {
 NAN_METHOD(stopStream) {
   HandleScope scope;
   // Get stream object
-  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
   // Stop stream
   ThrowIfPaError(Pa_StopStream(stream->streamPtr()));
   info.GetReturnValue().Set(true);
@@ -278,7 +279,7 @@ NAN_METHOD(stopStream) {
 NAN_METHOD(abortStream) {
   HandleScope scope;
   // Get stream object
-  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
   // Abort stream
   ThrowIfPaError(Pa_AbortStream(stream->streamPtr()));
   info.GetReturnValue().Set(true);
@@ -288,7 +289,7 @@ NAN_METHOD(abortStream) {
 NAN_METHOD(isStreamStopped) {
   HandleScope scope;
   // Get stream object
-  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
   // Check if stream is stopped
   PaError stopped = ThrowIfPaError(Pa_IsStreamStopped(stream->streamPtr()));
   if (stopped == 1) return info.GetReturnValue().Set(true);
@@ -299,7 +300,7 @@ NAN_METHOD(isStreamStopped) {
 NAN_METHOD(isStreamActive) {
   HandleScope scope;
   // Get stream object
-  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
   // Check if stream is active
   PaError active = ThrowIfPaError(Pa_IsStreamActive(stream->streamPtr()));
   if (active == 1) return info.GetReturnValue().Set(true);
@@ -310,7 +311,7 @@ NAN_METHOD(isStreamActive) {
 NAN_METHOD(getStreamInfo) {
   HandleScope scope;
   // Get stream object
-  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
   // Get stream info
   const PaStreamInfo* si = Pa_GetStreamInfo(stream->streamPtr());
   LocalObject obj = New<Object>();
@@ -324,7 +325,7 @@ NAN_METHOD(getStreamInfo) {
 NAN_METHOD(getStreamTime) {
   HandleScope scope;
   // Get stream object
-  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
   // Get stream time
   double streamTime = Pa_GetStreamTime(stream->streamPtr());
   info.GetReturnValue().Set(streamTime);
@@ -334,7 +335,7 @@ NAN_METHOD(getStreamTime) {
 NAN_METHOD(getStreamCpuLoad) {
   HandleScope scope;
   // Get stream object
-  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
   // Get stream time
   double cpu = Pa_GetStreamCpuLoad(stream->streamPtr());
   info.GetReturnValue().Set(cpu);
@@ -344,11 +345,11 @@ NAN_METHOD(getStreamCpuLoad) {
 NAN_METHOD(readStream) {
   HandleScope scope;
   // Get stream object from info[0]
-  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
   // Get the buffer data from info[1]
   TypedArrayContents<float> buffer(info[1]);
   // Get frames from info[2]
-  unsigned long frames = info[2]->Uint32Value();
+  unsigned long frames = LocalizeInt(info[2]);
   // Start stream
   ThrowIfPaError(Pa_ReadStream(stream->streamPtr(), *buffer, frames));
   info.GetReturnValue().Set(true);
@@ -358,11 +359,11 @@ NAN_METHOD(readStream) {
 NAN_METHOD(writeStream) {
   HandleScope scope;
   // Get stream object from info[0]
-  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
   // Get the buffer data from info[1]
   TypedArrayContents<float> buffer(info[1]);
   // Get frames from info[2]
-  unsigned long frames = info[2]->Uint32Value();
+  unsigned long frames = LocalizeInt(info[2]);
   // Start stream
   ThrowIfPaError(Pa_WriteStream(stream->streamPtr(), *buffer, frames));
   info.GetReturnValue().Set(true);
@@ -372,7 +373,7 @@ NAN_METHOD(writeStream) {
 NAN_METHOD(getStreamReadAvailable) {
   HandleScope scope;
   // Get stream object
-  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
   // Check that read stream is ready
   ThrowIfPaErrorInt(Pa_GetStreamReadAvailable(stream->streamPtr()));
   info.GetReturnValue().Set(true);
@@ -382,7 +383,7 @@ NAN_METHOD(getStreamReadAvailable) {
 NAN_METHOD(getStreamWriteAvailable) {
   HandleScope scope;
   // Get stream object
-  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(info[0]->ToObject());
+  JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(ToLocObject(info[0]));
   // Check that write stream is ready
   ThrowIfPaErrorInt(Pa_GetStreamWriteAvailable(stream->streamPtr()));
   info.GetReturnValue().Set(true);
@@ -390,7 +391,7 @@ NAN_METHOD(getStreamWriteAvailable) {
 
 // http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#a541ed0b734df2631bc4c229acf92abc1
 NAN_METHOD(getSampleSize) {
-  unsigned long format = info[0]->Uint32Value();
+  unsigned long format = LocalizeInt(info[0]);
   // Get stream time
   PaError size = ThrowIfPaError(Pa_GetSampleSize(format));
   info.GetReturnValue().Set(size);

@@ -9,6 +9,7 @@ int ThrowIfPaErrorInt (int err);
 PaDeviceIndex ThrowIfPaNoDevice (PaDeviceIndex dvcIndex);
 // Cast helpers
 int LocalizeInt (MaybeLocalValue lvIn);
+int64_t LocalizeInt64 (MaybeLocalValue lvIn);
 double LocalizeDouble (MaybeLocalValue lvIn);
 unsigned long LocalizeULong (MaybeLocalValue lvIn);
 LocalString ToLocString (std::string str);

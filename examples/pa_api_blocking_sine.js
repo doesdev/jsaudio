@@ -40,9 +40,9 @@ function blockingSine () {
   // sine wavetable
   let sine = new Float32Array(tableSize)
   // setup phase
-  let phase = {left: 0, right: 0}
+  let phase = { left: 0, right: 0 }
   // increment right to higher pitch so we can distinguish left and right
-  let increment = {left: 1, right: 3}
+  let increment = { left: 1, right: 3 }
   // log what we're doing
   console.log(
     'PortAudio Test: output sine wave\n',
